@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "es6", // 指定编译后的目标版本为es6 
+    "module": "commonjs", // 指定编译后的模块系统为commonjs 
+    "outDir": "./dist", // 指定编译后的输出目录为dist 
+    "strict": true, // 开启所有严格类型检查选项 
+    "esModuleInterop": true, // 开启es模块和commonjs模块之间的互操作性 
+    "skipLibCheck": true, // 跳过类型定义文件的类型检查 
+    "forceConsistentCasingInFileNames": true // 强制文件名的大小写一致性 
+  },
+  "include": ["./**/*.ts"], // 指定要编译的文件 
+  "exclude": ["node_modules"] // 指定要排除的文件 
+}

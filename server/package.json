@@ -1,0 +1,27 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "ts-node-dev app.ts",
+    "build": "tsc",
+    "start": "node dist/app.js"
+  },
+  "dependencies": {
+    "@koa/cors": "^3.1.0",
+    "@koa/router": "^10.1.1",
+    "koa": "^2.13.4",
+    "koa-bodyparser": "^4.3.0",
+    "mysql2": "^2.3.3",
+    "node-fetch": "^3.1.0",
+    "sequelize": "^6.12.0"
+  },
+  "devDependencies": {
+    "@types/koa": "^2.13.4",
+    "@types/koa__cors": "^3.0.3",
+    "@types/koa__router": "^8.0.8",
+    "@types/koa-bodyparser": "^4.3.1",
+    "@types/node-fetch": "^2.6.4",
+    "@types/sequelize": "^4.28.11",
+    "ts-node-dev": "^1.1.8"
+  }
+}
