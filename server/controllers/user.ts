@@ -1,84 +1,60 @@
-// 用户模块
+const userService = require("../services/user"); // 引入用户相关服务模块
 
-// 引入相关模块和工具函数
-const Router = require("koa-router");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const { query } = require("../utils/db");
-const { secret } = require("../config");
-
-// 创建路由器实例
-const router = new Router();
-
-// 定义登录接口
-router.post("/login", async (ctx) => {
-  try {
-    // 获取请求参数
-    const { phone, password } = ctx.request.body;
-
-    // 验证参数是否合法（省略）
-
-    // 查询数据库中是否存在该手机号对应的用户记录
-    const sql = "select * from user where phone=?";
-    const result = await query(sql, [phone]);
-
-    if (result.length === 0) {
-      // 用户不存在，返回错误信息
-      ctx.body = { code: -1, message: "用户不存在，请先注册" };
-    } else {
-      // 用户存在，比较密码是否正确（使用bcrypt加密）
-      const user = result[0];
-      if (bcrypt.compareSync(password, user.password)) {
-        // 密码正确，生成token（使用jwt）
-        const token = jwt.sign({ id: user.id }, secret, { expiresIn: "2h" });
-        // 返回成功信息和用户数据（去除密码字段）
-        delete user.password;
-        ctx.body = { code: 200, message: "登录成功", data: { user, token } };
-      } else {
-        // 密码错误，返回错误信息
-        ctx.body = { code: -2, message: "密码错误，请重新输入" };
-      }
+module.exports = {
+  async login(ctx) {
+    // 定义登录处理器方法，接收ctx作为参数
+    try {
+      const { phone, password } = ctx.request.body; // 从请求体数据中解构出手机号和密码
+      const user = await userService.login(phone, password); // 调用用户服务模块的登录方法，传入手机号和密码，返回一个用户对象
+      ctx.body = {
+        code: 0,
+        data: user,
+        message: "登录成功",
+      }; // 设置响应体数据，code为0表示成功，data为用户对象，message为提示信息
+    } catch (error) {
+      // 捕获错误对象
+      ctx.body = {
+        code: 1,
+        data: null,
+        message: error.message,
+      }; // 设置响应体数据，code为1表示失败，data为null，message为错误信息
     }
-  } catch (error) {
-    // 捕获异常，返回错误信息
-    ctx.body = { code: -3, message: error.message };
-  }
-});
-
-// 定义注册接口
-router.post("/register", async (ctx) => {
-  try {
-    // 获取请求参数
-    const { phone, password } = ctx.request.body;
-
-    // 验证参数是否合法（省略）
-
-    // 查询数据库中是否已存在该手机号对应的用户记录
-    const sql1 = "select * from user where phone=?";
-    const result1 = await query(sql1, [phone]);
-
-    if (result1.length > 0) {
-      // 用户已存在，返回错误信息
-      ctx.body = { code: -1, message: "用户已存在，请直接登录" };
-    } else {
-      // 用户不存在，插入新的用户记录（使用bcrypt加密密码）
-      const salt = bcrypt.genSaltSync(10);
-      const hash = bcrypt.hashSync(password, salt);
-      const sql2 = "insert into user (phone,password) values (?,?)";
-      const result2 = await query(sql2, [phone, hash]);
-      if (result2.affectedRows === 1) {
-        // 插入成功，返回成功信息
-        ctx.body = { code: 200, message: "注册成功" };
-      } else {
-        // 插入失败，返回错误信息
-        ctx.body = { code: -2, message: "注册失败，请重试" };
-      }
+  },
+  async register(ctx) {
+    // 定义注册处理器方法，接收ctx作为参数
+    try {
+      const { phone, password } = ctx.request.body; // 从请求体数据中解构出手机号和密码
+      await userService.register(phone, password); // 调用用户服务模块的注册方法，传入手机号和密码
+      ctx.body = {
+        code: 0,
+        data: null,
+        message: "注册成功",
+      }; // 设置响应体数据，code为0表示成功，data为null，message为提示信息
+    } catch (error) {
+      // 捕获错误对象
+      ctx.body = {
+        code: 1,
+        data: null,
+        message: error.message,
+      }; // 设置响应体数据，code为1表示失败，data为null，message为错误信息
     }
-  } catch (error) {
-    // 捕获异常，返回错误信息
-    ctx.body = { code: -3, message: error.message };
-  }
-});
-
-// 导出路由器实例
-module.exports = router;
+  },
+  async getUserInfo(ctx) {
+    // 定义获取用户信息处理器方法，接收ctx作为参数
+    try {
+      const user = await userService.getUserInfo(); // 调用用户服务模块的获取用户信息方法，返回一个用户对象
+      ctx.body = {
+        code: 0,
+        data: user,
+        message: "获取成功",
+      }; // 设置响应体数据，code为0表示成功，data为用户对象，message为提示信息
+    } catch (error) {
+      // 捕获错误对象
+      ctx.body = {
+        code: 1,
+        data: null,
+        message: error.message,
+      }; // 设置响应体数据，code为1表示失败，data为null，message为错误信息
+    }
+  },
+};
