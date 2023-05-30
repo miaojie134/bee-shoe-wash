@@ -1,38 +1,69 @@
-import { defineStore } from "pinia"; // 引入pinia库，用于创建状态管理对象
-import axios from "axios"; // 引入axios库，用于发送HTTP请求
+import { defineStore } from "pinia";
+import axios from "axios";
 
-export const useServiceStore = defineStore("service", {
+// 定义服务相关的状态管理模块
+export const useServicetore = defineStore({
+  // 定义模块的id
+  id: "service",
+  // 定义状态
   state: () => ({
-    services: [] as any[], // 服务信息数组，初始值为空数组
+    // 服务的类型列表
+    types: [],
+    // 服务的价格列表
+    prices: [],
+    // 服务的介绍列表
+    intros: [],
   }),
+  // 定义方法
   actions: {
-    async getServices() {
-      // 定义获取服务操作方法
-      const response = await axios.get("/api/service"); // 发送GET请求到后端的获取服务接口
-      if (response.data.code === 0) {
-        // 如果响应数据中的code为0，表示获取服务成功
-        this.services = response.data.data; // 将响应数据中的data赋值给services状态数组
-      } else {
-        // 如果响应数据中的code不为0，表示获取服务失败
-        throw new Error(response.data.message); // 抛出一个错误对象，错误信息为响应数据中的message
+    // 获取服务类型列表方法
+    async getServiceTypes() {
+      try {
+        // 发送获取服务类型列表请求
+        const res = await axios.get("/api/service/types");
+        if (res.data.code === 200) {
+          // 获取成功，更新服务类型列表数据
+          this.types = res.data.data;
+        }
+        // 返回响应数据
+        return res.data;
+      } catch (error) {
+        // 抛出异常
+        throw error;
       }
     },
-    async createService(type: string, price: number, description: string) {
-      // 定义创建服务操作方法，接收服务类型、价格和介绍作为参数
-      const response = await axios.post("/api/service", {
-        type,
-        price,
-        description,
-      }); // 发送POST请求到后端的创建服务接口，携带服务类型、价格和介绍作为请求体数据
-      if (response.data.code === 0) {
-        // 如果响应数据中的code为0，表示创建服务成功
-
-
-      } else {
-        // 如果响应数据中的code不为0，表示创建服务失败
-        throw new Error(response.data.message); // 抛出一个错误对象，错误信息为响应数据中的message
+    // 获取服务价格列表方法
+    async getServicePrices() {
+      try {
+        // 发送获取服务价格列表请求
+        const res = await axios.get("/api/service/prices");
+        if (res.data.code === 200) {
+          // 获取成功，更新服务价格列表数据
+          this.prices = res.data.data;
+        }
+        // 返回响应数据
+        return res.data;
+      } catch (error) {
+        // 抛出异常
+        throw error;
       }
     },
-
+    // 获取服务介绍列表方法
+    async getServiceIntros() {
+      try {
+        // 发送获取服务介绍列表请求
+        const res = await axios.get("/api/service/intros");
+        if (res.data.code === 200) {
+          // 获取成功，更新服务介绍列表数据
+          this.intros = res.data.data;
+        }
+        // 返回响应数据
+        return res.data;
+      } catch (error) {
+        // 抛出异常
+        throw error;
+      }
+    },
   },
 });
+

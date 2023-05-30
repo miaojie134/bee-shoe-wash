@@ -33,7 +33,7 @@
 <script lang="ts">
 import { defineComponent } from "vue";
 import NavBar from "../components/NavBar.vue";
-import { useStore } from "../store";
+import { useOrderStore } from "../store";
 import { useRoute } from "vue-router";
 
 export default defineComponent({
@@ -42,7 +42,7 @@ export default defineComponent({
     NavBar,
   },
   setup() {
-    const store = useStore();
+    const store = useOrderStore();
     const route = useRoute();
 
     const orderId = route.params.id;

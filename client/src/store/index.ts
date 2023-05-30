@@ -1,21 +1,16 @@
-import { createStore } from "pinia";
-import { userStore } from "./user";
-import { serviceStore } from "./service";
-import { orderStore } from "./order";
+import { createPinia } from 'pinia'
+import persist from 'pinia-plugin-persistedstate' //导入持久化插件
 
-export const useStore = () => {
-  return createStore({
-    id: "root",
-    getters: {
-      user: () => userStore.state.user,
-      services: () => serviceStore.state.services,
-      orders: () => orderStore.state.orders,
-      favorites: () => userStore.state.favorites,
-      shares: () => userStore.state.shares,
-      orderById: (id: string) =>
-        orderStore.state.orders.find((order) => order.id === id),
-      serviceById: (id: string) =>
-        serviceStore.state.services.find((service) => service.id === id),
-    },
-  });
-};
+// 导入各个模块
+export * from './user'  
+export * from './order'  
+export * from './service'
+
+
+ 
+// 创建pinia实例
+const pinia = createPinia()
+// 使用pinia插件
+pinia.use(persist)
+// 导出pinia实例，给main使用
+export default pinia

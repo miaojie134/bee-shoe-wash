@@ -1,77 +1,196 @@
 <template>
   <div class="service">
-    <h1>预约服务</h1>
-    <form @submit.prevent="handleSubmit">
-      <div class="form-group">
+    <NavBar />
+    <TabBar />
+    <div class="form">
+      <div class="input-group">
         <label for="type">服务类型</label>
-        <select id="type" v-model="type" required>
+        <select id="type" v-model="type">
           <option value="">请选择服务类型</option>
-          <option value="普通洗鞋">普通洗鞋</option>
-          <option value="高级洗鞋">高级洗鞋</option>
-          <option value="专业洗鞋">专业洗鞋</option>
+          <option value="1">标准洗</option>
+          <option value="2">深度洗</option>
+          <option value="3">消毒洗</option>
+          <option value="4">修复洗</option>
         </select>
+        <span class="error" v-if="typeError">{{ typeError }}</span>
       </div>
-      <div class="form-group">
+      <div class="input-group">
         <label for="time">服务时间</label>
         <input
-          type="datetime-local"
           id="time"
+          type="datetime-local"
           v-model="time"
           placeholder="请选择服务时间"
-          required
+          @input="validateTime"
         />
+        <span class="error" v-if="timeError">{{ timeError }}</span>
       </div>
-      <div class="form-group">
+      <div class="input-group">
         <label for="address">服务地址</label>
         <input
-          type="text"
           id="address"
-          v-model.trim="address"
+          type="text"
+          v-model="address"
           placeholder="请输入服务地址"
-          required
+          @input="validateAddress"
         />
-        <button type="button" class="btn btn-secondary" @click="showMap">
-          在地图上选择
-        </button>
+        <span class="error" v-if="addressError">{{ addressError }}</span>
       </div>
-      <button type="submit" class="btn btn-primary">下单</button>
-    </form>
-    <!-- 省略地图组件的代码 -->
+      <button class="submit" :disabled="!isValid" @click="order">下单</button>
+    </div>
   </div>
 </template>
+
 <script lang="ts">
-import { defineComponent } from "vue";
-import { useOrderStore } from "../stores/order"; // 引入订单状态管理模块
-import { useRouter } from "vue-router"; // 引入路由模块
+import { defineComponent, ref } from "vue";
+import { useStore } from "../store";
+import NavBar from "../components/NavBar.vue";
+import TabBar from "../components/TabBar.vue";
+
 export default defineComponent({
   name: "Service",
-  data() {
-    return {
-      type: "", // 服务类型
-      time: "", // 服务时间
-      address: "", // 服务地址
-    };
+  components: {
+    NavBar,
+    TabBar,
   },
-  methods: {
-    async handleSubmit() {
-      // 处理表单提交事件
+  setup() {
+    const store = useStore();
+
+    // 用户选择的服务类型
+    const type = ref("");
+
+    // 用户选择的服务时间
+    const time = ref("");
+
+    // 用户输入的服务地址
+    const address = ref("");
+
+    // 服务类型错误信息
+    const typeError = ref("");
+
+    // 服务时间错误信息
+    const timeError = ref("");
+
+    // 服务地址错误信息
+    const addressError = ref("");
+
+    // 表单是否有效
+    const isValid = ref(false);
+
+    // 验证服务类型是否选择
+    const validateType = () => {
+      if (!type.value) {
+        typeError.value = "请选择服务类型";
+      } else {
+        typeError.value = "";
+      }
+      checkValidity();
+    };
+
+    // 验证服务时间是否选择
+    const validateTime = () => {
+      if (!time.value) {
+        timeError.value = "请选择服务时间";
+      } else {
+        timeError.value = "";
+      }
+      checkValidity();
+    };
+
+    // 验证服务地址是否输入
+    const validateAddress = () => {
+      if (!address.value) {
+        addressError.value = "请输入服务地址";
+      } else {
+        addressError.value = "";
+      }
+      checkValidity();
+    };
+
+    // 检查表单是否有效
+    const checkValidity = () => {
+      isValid.value =
+        !typeError.value && !timeError.value && !addressError.value;
+    };
+
+    // 下单操作
+    const order = async () => {
       try {
-        const orderStore = useOrderStore(); // 获取订单状态管理对象
-        const router = useRouter(); // 获取路由对象
-        await orderStore.createOrder(this.type, this.time, this.address); // 调用订单状态管理对象的创建订单方法，传入服务类型、时间和地址
-        router.push("/order"); // 创建订单成功后，跳转到订单管理页面
+        // 调用下单接口
+        const res = await store.order(type.value, time.value, address.value);
+        if (res.code === 200) {
+          // 下单成功，跳转到支付页面
+          router.push("/pay");
+        } else {
+          // 下单失败，提示错误信息
+          alert(res.message);
+        }
       } catch (error) {
-        // 创建订单失败后，弹出错误提示
+        // 网络异常，提示错误信息
         alert(error.message);
       }
-    },
-    showMap() {
-      // 显示地图组件的方法
-      // 省略地图组件的逻辑代码
-    },
+    };
+
+    return {
+      type,
+      time,
+      address,
+      typeError,
+      timeError,
+      addressError,
+      isValid,
+      order,
+    };
   },
 });
 </script>
+
 <style scoped>
-/* 省略样式代码 */
+.service {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.form {
+  margin-top: 50px;
+  width: 80%;
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-group label {
+  display: block;
+  font-size: 14px;
+}
+
+.input-group select,
+.input-group input {
+  display: block;
+  width: 100%;
+  height: 40px;
+}
+
+.error {
+  display: block;
+  margin-top: 5px;
+  font-size: 12px;
+  color: red;
+}
+
+.submit {
+  display: block;
+  width: 100%;
+  height: 40px;
+  border: none;
+  border-radius: 20px;
+  background-color: #0078d4;
+  color: white;
+}
+
+.submit:disabled {
+  opacity: 0.5;
+}
 </style>

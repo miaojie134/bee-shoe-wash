@@ -1,104 +1,87 @@
 <template>
   <div class="nav-bar">
-    <div class="nav-bar-left" @click="$router.back()">
-      <img src="../assets/back.svg" alt="back" />
-    </div>
-    <div class="nav-bar-title">
-      <slot></slot>
-    </div>
-    <div class="nav-bar-right">
-      <img src="../assets/menu.svg" alt="menu" @click="showMenu = !showMenu" />
-    </div>
-    <transition name="fade">
-      <div class="nav-bar-menu" v-if="showMenu">
-        <ul>
-          <li @click="$router.push('/home')">首页</li>
-          <li @click="$router.push('/order')">订单管理</li>
-          <li @click="$router.push('/profile')">个人中心</li>
-          <li @click="logout">退出登录</li>
-        </ul>
-      </div>
-    </transition>
+    <button class="back" @click="goBack">⬅️</button>
+    <span class="title">{{ title }}</span>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from "vue";
-import { useStore } from "../store";
-import { useRouter } from "vue-router";
+import { defineComponent,ref,watch,onMounted } from "vue";
+import { useRoute } from "vue-router";
 
 export default defineComponent({
   name: "NavBar",
   setup() {
-    const showMenu = ref(false);
-    const store = useStore();
-    const router = useRouter();
+    // 获取当前路由对象
+    const route = useRoute();
 
-    const logout = () => {
-      store.actions.user.logout();
-      router.push("/login");
+    // 获取当前页面的标题
+    const title = ref("");
+
+    // 根据不同的路由路径设置不同的标题
+    const setTitle = () => {
+      switch (route.path) {
+        case "/login":
+          title.value = "登录";
+          break;
+        case "/register":
+          title.value = "注册";
+          break;
+        case "/service":
+          title.value = "预约服务";
+          break;
+        case "/order":
+          title.value = "订单管理";
+          break;
+        case "/pay":
+          title.value = "支付";
+          break;
+        case "/comment":
+          title.value = "评价";
+          break;
+        case "/profile":
+          title.value = "个人中心";
+          break;
+        default:
+          title.value = "";
+      }
     };
 
+    // 返回上一页操作
+    const goBack = () => {
+      window.history.back();
+    };
+
+    // 在路由变化时设置标题
+    watch(route, () => {
+      setTitle();
+    });
+
+    // 在组件创建时设置标题
+    onMounted(() => {
+      setTitle();
+    });
+
     return {
-      showMenu,
-      logout,
+      title,
+      goBack,
     };
   },
 });
 </script>
 
-<style scoped lang="scss">
+<style scoped>
 .nav-bar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
   height: 50px;
-  padding: 0 10px;
-  background-color: #f0f0f0;
-  border-bottom: 1px solid #e0e0e0;
 }
 
-.nav-bar-left,
-.nav-bar-right {
-  width: 30px;
-  height: 30px;
+.back {
+  margin-left: 10px;
 }
 
-.nav-bar-left img,
-.nav-bar-right img {
-  width: 100%;
-  height: 100%;
-}
-
-.nav-bar-title {
-  font-size: 18px;
-  font-weight: bold;
-}
-
-.nav-bar-menu {
-  position: absolute;
-  top: 50px;
-  right: 10px;
-  width: 120px;
-  background-color: #f0f0f0;
-  border-radius: 5px;
-}
-
-.nav-bar-menu ul {
-  list-style: none;
-}
-
-.nav-bar-menu li {
-  padding: 10px;
-}
-
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity .3s ease-in-out;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
+.title {
+  margin-left: 20px;
 }
 </style>

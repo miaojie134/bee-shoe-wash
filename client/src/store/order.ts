@@ -1,35 +1,94 @@
-import { defineStore } from "pinia"; // 引入pinia库，用于创建状态管理对象
-import axios from "axios"; // 引入axios库，用于发送HTTP请求
+import { defineStore } from "pinia";
+import axios from "axios";
 
-export const useOrderStore = defineStore("order", {
+// 定义订单相关的状态管理模块
+export const useOrderStore = defineStore({
+  // 定义模块的id
+  id: "order",
+  // 定义状态
   state: () => ({
-    orders: [] as any[], // 订单信息数组，初始值为空数组
+    // 用户的订单列表
+    list: [],
   }),
+  // 定义方法
   actions: {
-    async createOrder(type: string, time: string, address: string) {
-      // 定义创建订单操作方法，接收服务类型、时间和地址作为参数
-      const response = await axios.post("/api/order", { type, time, address }); // 发送POST请求到后端的创建订单接口，携带服务类型、时间和地址作为请求体数据
-      if (response.data.code === 0) {
-        // 如果响应数据中的code为0，表示创建订单成功
-
-
-      } else {
-        // 如果响应数据中的code不为0，表示创建订单失败
-        throw new Error(response.data.message); // 抛出一个错误对象，错误信息为响应数据中的message
+    // 下单方法
+    async order(type: string, time: string, address: string) {
+      try {
+        // 发送下单请求，带上token和参数
+        const res = await axios.post(
+          "/api/order",
+          { type, time, address },
+          { headers: { Authorization: `Bearer ${this.token}` } }
+        );
+        if (res.data.code === 200) {
+          // 下单成功，更新订单列表数据
+          this.list.push(res.data.data);
+        }
+        // 返回响应数据
+        return res.data;
+      } catch (error) {
+        // 抛出异常
+        throw error;
       }
     },
-    async getOrders() {
-      // 定义获取订单操作方法
-      const response = await axios.get("/api/order"); // 发送GET请求到后端的获取订单接口
-      if (response.data.code === 0) {
-        // 如果响应数据中的code为0，表示获取订单成功
-        this.orders = response.data.data; // 将响应数据中的data赋值给orders状态数组
-      } else {
-        // 如果响应数据中的code不为0，表示获取订单失败
-        throw new Error(response.data.message); // 抛出一个错误对象，错误信息为响应数据中的message
+    // 获取订单列表方法
+    async getOrderList() {
+      try {
+        // 发送获取订单列表请求，带上token
+        const res = await axios.get("/api/order", {
+          headers: { Authorization: `Bearer ${this.token}` },
+        });
+        if (res.data.code === 200) {
+          // 获取成功，更新订单列表数据
+          this.list = res.data.data;
+        }
+        // 返回响应数据
+        return res.data;
+      } catch (error) {
+        // 抛出异常
+        throw error;
       }
     },
-
+    // 支付方法
+    async pay(id: number) {
+      try {
+        // 发送支付请求，带上token和参数
+        const res = await axios.post(
+          "/api/pay",
+          { id },
+          { headers: { Authorization: `Bearer ${this.token}` } }
+        );
+        if (res.data.code === 200) {
+          // 支付成功，更新订单状态为待评价
+          const order = this.list.find((item) => item.id === id);
+          if (order) {
+            order.status = 1;
+          }
+        }
+        // 返回响应数据
+        return res.data;
+      } catch (error) {
+        // 抛出异常
+        throw error;
+      }
+    },
+    // 获取支付二维码方法
+    async getPayQrcode(type: string) {
+      try {
+        // 发送获取支付二维码请求，带上token和参数
+        const res = await axios.post(
+          "/api/qrcode",
+          { type },
+          { headers: { Authorization: `Bearer ${this.token}` } }
+        );
+        // 返回响应数据
+        return res.data;
+      } catch (error) {
+        // 抛出异常
+        throw error;
+      }
+    },
   },
 });
 

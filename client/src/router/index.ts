@@ -1,25 +1,18 @@
 import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router' 
+import { useStore } from "../store";
 
-import Home from "../pages/Home.vue";
+// 导入页面组件
 import Login from "../pages/Login.vue";
 import Register from "../pages/Register.vue";
-import Book from "../pages/Book.vue";
+import Service from "../pages/Service.vue";
 import Order from "../pages/Order.vue";
-import OrderDetail from "../pages/OrderDetail.vue";
-import Rate from "../pages/Rate.vue";
+import Pay from "../pages/Pay.vue";
 import Profile from "../pages/Profile.vue";
-import Favorite from "../pages/Favorite.vue";
-import Share from "../pages/Share.vue";
 
 const routes:Array<RouteRecordRaw> = [
   {
     path: "/",
-    redirect: "/home",
-  },
-  {
-    path: "/home",
-    name: "Home",
-    component: Home,
+    redirect: "/login",
   },
   {
     path: "/login",
@@ -32,9 +25,9 @@ const routes:Array<RouteRecordRaw> = [
     component: Register,
   },
   {
-    path: "/book/:id",
-    name: "Book",
-    component: Book,
+    path: "/service",
+    name: "Service",
+    component: Service,
   },
   {
     path: "/order",
@@ -42,35 +35,40 @@ const routes:Array<RouteRecordRaw> = [
     component: Order,
   },
   {
-    path: "/order/:id",
-    name: "OrderDetail",
-    component: OrderDetail,
-  },
-  {
-    path: "/rate/:id",
-    name: "Rate",
-    component: Rate,
+    path: "/pay",
+    name: "Pay",
+    component: Pay,
   },
   {
     path: "/profile",
     name: "Profile",
     component: Profile,
   },
-  {
-    path: "/favorite",
-    name: "Favorite",
-    component: Favorite,
-  },
-  {
-    path: "/share",
-    name: "Share",
-    component: Share,
-  },
 ];
 
 const router = createRouter({
   history: createWebHashHistory(),
   routes,
+});
+
+// 获取状态管理实例
+const store = useStore();
+// 添加路由守卫
+router.beforeEach((to, from, next) => {
+  // 如果要跳转的页面不是登录或注册页面
+  if (to.name !== "Login" && to.name !== "Register") {
+    // 检查是否已经登录
+    if (store.isLogin) {
+      // 已经登录，放行
+      next();
+    } else {
+      // 没有登录，跳转到登录页面
+      next("/login");
+    }
+  } else {
+    // 要跳转的页面是登录或注册页面，放行
+    next();
+  }
 });
 
 export default router;

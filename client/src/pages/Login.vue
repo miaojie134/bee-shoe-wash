@@ -1,26 +1,45 @@
 <template>
   <div class="login">
-    <NavBar>登录</NavBar>
-    <div class="login-form">
-      <div class="login-input">
+    <NavBar />
+    <div class="logo">
+      <img src="../assets/logo.png" alt="logo" />
+    </div>
+    <div class="form">
+      <div class="input-group">
         <label for="phone">手机号</label>
-        <input type="text" id="phone" v-model.trim="phone" placeholder="请输入手机号" />
+        <input
+          id="phone"
+          type="tel"
+          v-model="phone"
+          placeholder="请输入手机号"
+          @input="validatePhone"
+        />
+        <span class="error" v-if="phoneError">{{ phoneError }}</span>
       </div>
-      <div class="login-input">
+      <div class="input-group">
         <label for="password">密码</label>
-        <input type="password" id="password" v-model.trim="password" placeholder="请输入密码" />
+        <input
+          id="password"
+          type="password"
+          v-model="password"
+          placeholder="请输入密码"
+          @input="validatePassword"
+        />
+        <span class="error" v-if="passwordError">{{ passwordError }}</span>
       </div>
-      <div class="login-button" @click="login">登录</div>
-      <div class="login-link" @click="$router.push('/register')">没有账号？去注册</div>
+      <button class="submit" :disabled="!isValid" @click="login">登录</button>
+      <p class="register">
+        没有账号？<router-link to="/register">立即注册</router-link>
+      </p>
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref } from "vue";
-import NavBar from "../components/NavBar.vue";
+import { useRouter } from "vue-router";
 import { useStore } from "../store";
-import { validatePhone, validatePassword } from "../utils/validate";
+import NavBar from "../components/NavBar.vue";
 
 export default defineComponent({
   name: "Login",
@@ -28,23 +47,68 @@ export default defineComponent({
     NavBar,
   },
   setup() {
-    const phone = ref("");
-    const password = ref("");
+    const router = useRouter();
     const store = useStore();
 
+    // 用户输入的手机号
+    const phone = ref("");
+
+    // 用户输入的密码
+    const password = ref("");
+
+    // 手机号错误信息
+    const phoneError = ref("");
+
+    // 密码错误信息
+    const passwordError = ref("");
+
+    // 表单是否有效
+    const isValid = ref(false);
+
+    // 验证手机号格式
+    const validatePhone = () => {
+      const reg = /^1[3-9]\d{9}$/;
+      if (!phone.value) {
+        phoneError.value = "手机号不能为空";
+      } else if (!reg.test(phone.value)) {
+        phoneError.value = "手机号格式不正确";
+      } else {
+        phoneError.value = "";
+      }
+      checkValidity();
+    };
+
+    // 验证密码长度
+    const validatePassword = () => {
+      if (!password.value) {
+        passwordError.value = "密码不能为空";
+      } else if (password.value.length < 6 || password.value.length > 16) {
+        passwordError.value = "密码长度应为6-16位";
+      } else {
+        passwordError.value = "";
+      }
+      checkValidity();
+    };
+
+    // 检查表单是否有效
+    const checkValidity = () => {
+      isValid.value = !phoneError.value && !passwordError.value;
+    };
+
+    // 登录操作
     const login = async () => {
-      if (!validatePhone(phone.value)) {
-        alert("请输入正确的手机号");
-        return;
-      }
-      if (!validatePassword(password.value)) {
-        alert("请输入6-20位的密码");
-        return;
-      }
       try {
-        await store.actions.user.login({ phone: phone.value, password: password.value });
-        $router.push("/home");
+        // 调用登录接口
+        const res = await store.login(phone.value, password.value);
+        if (res.code === 200) {
+          // 登录成功，跳转到预约服务页面
+          router.push("/service");
+        } else {
+          // 登录失败，提示错误信息
+          alert(res.message);
+        }
       } catch (error) {
+        // 网络异常，提示错误信息
         alert(error.message);
       }
     };
@@ -52,55 +116,81 @@ export default defineComponent({
     return {
       phone,
       password,
+      phoneError,
+      passwordError,
+      isValid,
+      validatePhone,
+      validatePassword,
       login,
     };
   },
 });
 </script>
 
-<style scoped lang="scss">
+<style scoped>
 .login {
-  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.login-form {
-  margin: 20px;
+.logo {
+  margin-top: 50px;
 }
 
-.login-input {
-  margin-bottom: 10px;
+.logo img {
+  width: 100px;
+  height: 100px;
 }
 
-.login-input label {
+.form {
+  margin-top: 50px;
+  width: 80%;
+}
+
+.input-group {
+  margin-bottom: 20px;
+}
+
+.input-group label {
   display: block;
   font-size: 14px;
 }
 
-.login-input input {
+.input-group input {
   display: block;
   width: 100%;
   height: 40px;
-  border: 1px solid #e0e0e0;
-  border-radius: 5px;
-  padding: 0 10px;
+  border: none;
+  border-bottom: 1px solid #cccccc;
 }
 
-.login-button {
+.error {
   display: block;
-  width: 100%;
-  height: 40px;
-  line-height: 40px;
-  text-align: center;
-  color: #fff;
-  background-color: #00a0e9;
-  border-radius: 5px;
+  margin-top: 5px;
+  font-size: 12px;
+  color: red;
 }
 
-.login-link {
+.submit {
   display: block;
   width: 100%;
   height: 40px;
-  line-height: 40px;
-  text-align: center;
+  border: none;
+  border-radius: 20px;
+  background-color: #0078d4;
+  color: white;
+}
+
+.submit:disabled {
+  opacity: 0.5;
+}
+
+.register {
+  margin-top: 20px;
+}
+
+.register a {
+  color: #0078d4;
 }
 </style>

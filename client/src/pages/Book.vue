@@ -31,8 +31,8 @@
 <script lang="ts">
 import { defineComponent, ref } from "vue";
 import NavBar from "../components/NavBar.vue";
-import { useStore } from "../store";
-import { useRoute } from "vue-router";
+import { useOrderStore } from "../store/index";
+import { useRouter,useRoute } from "vue-router";
 
 export default defineComponent({
   name: "Book",
@@ -40,9 +40,9 @@ export default defineComponent({
     NavBar,
   },
   setup() {
-    const store = useStore();
-    const route = useRoute();
-
+    const store = useOrderStore();
+    const router = useRouter();
+    const route = useRoute()
     const services = store.getters.services;
     const serviceId = ref(route.params.id);
     const date = ref("");
@@ -63,7 +63,7 @@ export default defineComponent({
           date: date.value,
           address: address.value,
         });
-        $router.push("/order");
+        router.push("/order");
       } catch (error) {
         alert(error.message);
       }
