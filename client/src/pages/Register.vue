@@ -1,96 +1,116 @@
-<!-- 注册页面 -->
 <template>
   <div class="register">
-    <h1>蜜蜂洗鞋</h1>
-    <form @submit.prevent="handleSubmit">
-      <div class="form-group">
+    <NavBar>注册</NavBar>
+    <div class="register-form">
+      <div class="register-input">
         <label for="phone">手机号</label>
-        <input type="tel" id="phone" v-model.trim="phone" placeholder="请输入手机号" required />
+        <input
+          type="text"
+          id="phone"
+          v-model.trim="phone"
+          placeholder="请输入手机号"
+        />
       </div>
-      <div class="form-group">
+      <div class="register-input">
         <label for="password">密码</label>
-        <input type="password" id="password" v-model.trim="password" placeholder="请输入密码" required />
+        <input
+          type="password"
+          id="password"
+          v-model.trim="password"
+          placeholder="请输入密码"
+        />
       </div>
-      <button type="submit" class="btn btn-primary">注册</button>
-    </form>
-    <p class="link">
-      已有账号？<router-link to="/login">立即登录</router-link>
-    </p>
+      <div class="register-button" @click="register">注册</div>
+      <div class="register-link" @click="$router.push('/login')">已有账号？去登录</div>
+    </div>
   </div>
 </template>
-  
+
 <script lang="ts">
-import { defineComponent } from "vue";
-import { useUserStore } from "../stores/user"; // 引入用户状态管理模块
-import { useRouter } from "vue-router"; // 引入路由模块
+import { defineComponent, ref } from "vue";
+import NavBar from "../components/NavBar.vue";
+import { useStore } from "../store";
+import { validatePhone, validatePassword } from "../utils/validate";
+
 export default defineComponent({
   name: "Register",
-  data() {
-    return {
-      phone: "", // 手机号
-      password: "", // 密码
-    };
+  components: {
+    NavBar,
   },
-  methods: {
-    async handleSubmit() {
-      // 处理表单提交事件
+  setup() {
+    const phone = ref("");
+    const password = ref("");
+    const store = useStore();
+
+    const register = async () => {
+      if (!validatePhone(phone.value)) {
+        alert("请输入正确的手机号");
+        return;
+      }
+      if (!validatePassword(password.value)) {
+        alert("请输入6-20位的密码");
+        return;
+      }
       try {
-        const userStore = useUserStore(); // 获取用户状态管理对象
-        const router = useRouter(); // 获取路由对象
-        await userStore.register(this.phone, this.password); // 调用用户状态管理对象的注册方法，传入手机号和密码
-        router.push("/login"); // 注册成功后，跳转到登录页面
+        await store.actions.user.register({ phone: phone.value, password: password.value });
+        $router.push("/login");
       } catch (error) {
-        // 注册失败后，弹出错误提示
         alert(error.message);
       }
-    },
+    };
+
+    return {
+      phone,
+      password,
+      register,
+    };
   },
 });
 </script>
-  
-<style scoped>
-.register-page {
-  width: 100%;
+
+<style scoped lang="scss">
+.register {
   height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
 }
 
 .register-form {
-  width: 80%;
-  max-width: 400px;
+  margin: 20px;
 }
 
-.form-item {
-  margin-bottom: 20px;
+.register-input {
+  margin-bottom: 10px;
 }
 
-.form-item label {
+.register-input label {
   display: block;
-  font-weight: bold;
+  font-size: 14px;
 }
 
-.form-item input {
+.register-input input {
+  display: block;
   width: 100%;
   height: 40px;
-  border: none;
-  border-bottom: 1px solid #ccc;
+  border: 1px solid #e0e0e0;
+  border-radius: 5px;
+  padding: 0 10px;
 }
 
 .register-button {
+  display: block;
   width: 100%;
   height: 40px;
+  line-height: 40px;
+  text-align: center;
+  color: #fff;
   background-color: #00a0e9;
-  /* new Bing主题颜色 */
-  color: white;
-  border: none;
+  border-radius: 5px;
 }
 
-.login-link {
-  margin-top: 20px;
+.register-link {
+  display: block;
+  width: 100%;
+  height: 40px;
+  line-height: 40px;
+  text-align: center;
 }
 </style>
-  
-  

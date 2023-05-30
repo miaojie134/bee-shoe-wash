@@ -12,4 +12,14 @@ module.exports = {
     const [rows] = await db.query(sql); // 调用数据库操作模块的query方法，传入查询语句，返回一个结果数组
     return rows; // 返回结果数组
   },
+  async payOrder(id) {
+    // 定义支付订单服务方法，接收订单id作为参数
+    const sql = "update order set status = '已支付' where id = ?"; // 定义更新语句，根据订单id更新订单表中的状态字段为'已支付'
+    await db.query(sql, [id]); // 调用数据库操作模块的query方法，传入更新语句和参数数组
+  },
+  async rateOrder(id, rating, comment) {
+    // 定义评价订单服务方法，接收订单id、评分和评论作为参数
+    const sql = "update order set rating = ?, comment = ? where id = ?"; // 定义更新语句，根据订单id更新订单表中的评分和评论字段
+    await db.query(sql, [rating, comment, id]); // 调用数据库操作模块的query方法，传入更新语句和参数数组
+  },
 };
