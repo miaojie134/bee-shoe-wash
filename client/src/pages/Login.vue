@@ -9,7 +9,7 @@
         <input type="password" v-model="password" placeholder="请输入密码" required minlength="6" />
       </div>
       <div class="form-item">
-        <button type="submit">登录</button>
+        <button type="submit" :disabled="!phone || !password">登录</button>
       </div>
       <div class="form-item">
         <a href="/register">没有账号？去注册</a>

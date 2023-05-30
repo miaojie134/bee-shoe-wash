@@ -22,7 +22,7 @@ http.interceptors.request.use(
     // 在发送请求之前做些什么
     // 如果已经登录，就在请求头中添加token
     if (store.isLogin) {
-      config.headers.Authorization = `Bearer ${store.token}`;
+      config.headers.Authorization = `Bearer ${localStorage.getItem('token')}`;
     }
     // 返回修改后的配置
     return config;

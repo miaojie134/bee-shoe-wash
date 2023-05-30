@@ -20,7 +20,7 @@
       </div>
       <!-- 定义一个注册按钮，点击时触发提交表单方法 -->
       <div class="form-item">
-        <button type="submit">注册</button>
+        <button type="submit" :disabled="!phone || !password">注册</button>
       </div>
       <!-- 定义一个登录链接，点击时跳转到登录页面 -->
       <div class="form-item">
