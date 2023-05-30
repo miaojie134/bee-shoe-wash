@@ -1,90 +1,70 @@
 import { defineStore } from "pinia";
-import axios from "axios";
+import { api } from "@/api/index";
+
 
 // 定义用户相关的状态管理模块
-export const useUserStore = defineStore({
-  // 定义模块的id
-  id: "user",
-  // 定义状态
+// 定义user模块，用于存储和操作用户相关的数据
+export const useUserStore = defineStore('user', {
+  // 定义状态，用于存储用户信息
   state: () => ({
-    // 是否已经登录
-    isLogin: false,
-    // 用户的token
-    token: "",
-    // 用户的信息
-    info: {},
+    user: null as User | null // 用户对象，初始为null
   }),
-  // 定义方法
+  // 定义getters，用于计算派生状态
+  getters: {
+    // 判断用户是否已登录
+    isLogin() {
+      return !!this.user
+    }
+  },
+  // 定义actions，用于执行异步操作或修改状态
   actions: {
-    // 登录方法
+    // 登录方法，接收手机号和密码作为参数，调用后端接口进行验证，如果成功，将返回的用户信息保存到状态中，并存储到本地
     async login(phone: string, password: string) {
       try {
-        // 发送登录请求
-        const res = await axios.post("/api/login", { phone, password });
-        if (res.data.code === 200) {
-          // 登录成功，更新状态
-          this.isLogin = true;
-          this.token = res.data.data;
+        // 调用后端接口，传递手机号和密码
+        const res = await api.login(phone, password)
+        // 判断返回结果是否成功
+        if (res.code === 200) {
+          // 如果成功，将返回的用户信息赋值给状态中的user属性
+          this.user = res.data
+          // 并将用户信息转换为字符串存储到本地
+          localStorage.setItem('user', JSON.stringify(this.user))
+          // 返回成功的提示信息
+          return res.message
+        } else {
+          // 如果失败，抛出错误信息
+          throw new Error(res.message)
         }
-        // 返回响应数据
-        return res.data;
       } catch (error) {
-        // 抛出异常
-        throw error;
+        // 捕获错误，并返回错误信息
+        return error.message
       }
     },
-    // 注册方法
+    // 注册方法，接收手机号和密码作为参数，调用后端接口进行注册，如果成功，返回成功的提示信息
     async register(phone: string, password: string) {
       try {
-        // 发送注册请求
-        const res = await axios.post("/api/register", { phone, password });
-        // 返回响应数据
-        return res.data;
-      } catch (error) {
-        // 抛出异常
-        throw error;
-      }
-    },
-    // 退出登录方法
-    async logout() {
-      try {
-        // 发送退出登录请求，带上token
-        const res = await axios.post(
-          "/api/logout",
-          {},
-          { headers: { Authorization: `Bearer ${this.token}` } }
-        );
-        if (res.data.code === 200) {
-          // 退出登录成功，更新状态
-          this.isLogin = false;
-          this.token = "";
-          this.info = {};
+        // 调用后端接口，传递手机号和密码
+        const res = await api.register(phone, password)
+        // 判断返回结果是否成功
+        if (res.code === 200) {
+          // 如果成功，返回成功的提示信息
+          return res.message
+        } else {
+          // 如果失败，抛出错误信息
+          throw new Error(res.message)
         }
-        // 返回响应数据
-        return res.data;
       } catch (error) {
-        // 抛出异常
-        throw error;
+        // 捕获错误，并返回错误信息
+        return error.message
       }
     },
-    // 获取用户信息方法
-    async getUserInfo() {
-      try {
-        // 发送获取用户信息请求，带上token
-        const res = await axios.get("/api/user", {
-          headers: { Authorization: `Bearer ${this.token}` },
-        });
-        if (res.data.code === 200) {
-          // 获取成功，更新用户信息数据
-          this.info = res.data.data;
-        }
-        // 返回响应数据
-        return res.data;
-      } catch (error) {
-        // 抛出异常
-        throw error;
-      }
-    },
-  },
-});
+    // 注销方法，清空状态中的用户信息，并清空本地存储的用户信息
+    logout() {
+      // 将状态中的user属性赋值为null
+      this.user = null
+      // 将本地存储中的user属性移除
+      localStorage.removeItem('user')
+    }
+  }
+})
 

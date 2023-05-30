@@ -2,9 +2,7 @@ import { defineStore } from "pinia";
 import axios from "axios";
 
 // 定义服务相关的状态管理模块
-export const useServicetore = defineStore({
-  // 定义模块的id
-  id: "service",
+export const useServicetore = defineStore('service',{
   // 定义状态
   state: () => ({
     // 服务的类型列表

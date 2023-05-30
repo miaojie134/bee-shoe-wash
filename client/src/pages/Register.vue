@@ -1,196 +1,140 @@
+
 <template>
-  <div class="register">
-    <NavBar />
-    <div class="logo">
-      <img src="../assets/logo.png" alt="logo" />
-    </div>
-    <div class="form">
-      <div class="input-group">
-        <label for="phone">手机号</label>
-        <input
-          id="phone"
-          type="tel"
-          v-model="phone"
-          placeholder="请输入手机号"
-          @input="validatePhone"
-        />
-        <span class="error" v-if="phoneError">{{ phoneError }}</span>
+  <!-- 定义一个注册页面组件，用于展示和交互注册表单 -->
+  <div class="register-container">
+    <!-- 定义一个标题，显示应用名称 -->
+    <h1 class="title">蜜蜂洗鞋</h1>
+    <!-- 定义一个表单，用于输入手机号和密码 -->
+    <form class="form" @submit.prevent="submitForm">
+      <!-- 定义一个手机号输入框，绑定手机号数据，并添加校验规则 -->
+      <div class="form-item">
+        <input type="text" v-model="phone" placeholder="请输入手机号" required pattern="^1[3-9]\d{9}$" />
       </div>
-      <div class="input-group">
-        <label for="password">密码</label>
-        <input
-          id="password"
-          type="password"
-          v-model="password"
-          placeholder="请输入密码"
-          @input="validatePassword"
-        />
-        <span class="error" v-if="passwordError">{{ passwordError }}</span>
+      <!-- 定义一个密码输入框，绑定密码数据，并添加校验规则 -->
+      <div class="form-item">
+        <input type="password" v-model="password" placeholder="请输入密码" required minlength="6" />
       </div>
-      <button class="submit" :disabled="!isValid" @click="register">注册</button>
-      <p class="login">
-        已有账号？<router-link to="/login">立即登录</router-link>
-      </p>
-    </div>
+      <!-- 定义一个确认密码输入框，绑定确认密码数据，并添加校验规则 -->
+      <div class="form-item">
+        <input type="password" v-model="confirmPassword" placeholder="请确认密码" required minlength="6" />
+      </div>
+      <!-- 定义一个注册按钮，点击时触发提交表单方法 -->
+      <div class="form-item">
+        <button type="submit">注册</button>
+      </div>
+      <!-- 定义一个登录链接，点击时跳转到登录页面 -->
+      <div class="form-item">
+        <a href="/login">已有账号？去登录</a>
+      </div>
+    </form>
   </div>
 </template>
-
 <script lang="ts">
-import { defineComponent, ref } from "vue";
-import { useRouter } from "vue-router";
-import { useUserStore } from "../store";
-import NavBar from "../components/NavBar.vue";
+// 引入vue相关的库和函数
+import { defineComponent, ref } from 'vue'
+// 引入路由对象和状态管理对象
+import { useRouter } from 'vue-router'
+import { useUserStore } from '../store'
 
+// 定义注册页面组件的选项
 export default defineComponent({
-  name: "Register",
-  components: {
-    NavBar,
-  },
+  // 定义组件的状态，用于存储和操作数据
   setup() {
-    const router = useRouter();
-    const store = useUserStore();
+    // 获取路由对象
+    const router = useRouter()
+    // 获取用户状态管理对象
+    const userStore = useUserStore()
+    // 定义一个响应式数据，用于存储手机号
+    const phone = ref<string>('')
+    // 定义一个响应式数据，用于存储密码
+    const password = ref<string>('')
+    // 定义一个响应式数据，用于存储确认密码
+    const confirmPassword = ref<string>('')
 
-    // 用户输入的手机号
-    const phone = ref("");
-
-    // 用户输入的密码
-    const password = ref("");
-
-    // 手机号错误信息
-    const phoneError = ref("");
-
-    // 密码错误信息
-    const passwordError = ref("");
-
-    // 表单是否有效
-    const isValid = ref(false);
-
-    // 验证手机号格式
-    const validatePhone = () => {
-      const reg = /^1[3-9]\d{9}$/;
-      if (!phone.value) {
-        phoneError.value = "手机号不能为空";
-      } else if (!reg.test(phone.value)) {
-        phoneError.value = "手机号格式不正确";
+    // 定义一个方法，用于提交表单，并调用注册接口进行注册，如果成功，跳转到登录页面
+    const submitForm = async () => {
+      // 判断密码和确认密码是否一致
+      if (password.value !== confirmPassword.value) {
+        // 如果不一致，弹出错误信息，并返回
+        alert('两次输入的密码不一致')
+        return
+      }
+      // 调用用户状态管理对象的注册方法，传递手机号和密码，并获取返回结果
+      const result = await userStore.register(phone.value, password.value)
+      // 判断返回结果是否成功
+      if (result === '注册成功') {
+        // 如果成功，跳转到登录页面，并传递成功的提示信息
+        router.push({ path: '/login', query: { message: result } })
       } else {
-        phoneError.value = "";
+        // 如果失败，弹出错误信息
+        alert(result)
       }
-      checkValidity();
-    };
+    }
 
-    // 验证密码长度
-    const validatePassword = () => {
-      if (!password.value) {
-        passwordError.value = "密码不能为空";
-      } else if (password.value.length < 6 || password.value.length > 16) {
-        passwordError.value = "密码长度应为6-16位";
-      } else {
-        passwordError.value = "";
-      }
-      checkValidity();
-    };
-
-    // 检查表单是否有效
-    const checkValidity = () => {
-      isValid.value = !phoneError.value && !passwordError.value;
-    };
-
-    // 注册操作
-    const register = async () => {
-      try {
-        // 调用注册接口
-        const res = await store.register(phone.value, password.value);
-        if (res.code === 200) {
-          // 注册成功，跳转到登录页面
-          router.push("/login");
-        } else {
-          // 注册失败，提示错误信息
-          alert(res.message);
-        }
-      } catch (error) {
-        // 网络异常，提示错误信息
-        alert(error.message);
-      }
-    };
-
+    // 返回需要在模板中使用的数据和方法
     return {
       phone,
       password,
-      phoneError,
-      passwordError,
-      validatePhone,
-      validatePassword,
-      isValid,
-      register,
-    };
-  },
-});
+      confirmPassword,
+      submitForm
+    }
+  }
+})
 </script>
-
+  
 <style scoped>
-.register {
+/* 定义组件的样式 */
+.register-container {
+  /* 注册容器样式 */
+  width: 80%;
+  max-width: 400px;
+  margin: auto;
+  padding-top: 50px;
+}
+
+.title {
+  /* 标题样式 */
+  text-align: center;
+  font-size: 32px;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.form {
+  /* 表单样式 */
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-.logo {
-  margin-top: 50px;
+.form-item {
+  /* 表单项样式 */
+  width: 100%;
+  margin-bottom: 10px;
 }
 
-.logo img {
-  width: 100px;
-  height: 100px;
-}
-
-.form {
-  margin-top: 50px;
-  width: 80%;
-}
-
-.input-group {
-  margin-bottom: 20px;
-}
-
-.input-group label {
-  display: block;
-  font-size: 14px;
-}
-
-.input-group input {
-  display: block;
+.form-item input {
+  /* 输入框样式 */
   width: 100%;
   height: 40px;
   border: none;
-  border-bottom: 1px solid #cccccc;
+  border-bottom: 1px solid #ccc;
+  padding: 0 10px;
 }
 
-.error {
-  display: block;
-  margin-top: 5px;
-  font-size: 12px;
-  color: red;
-}
-
-.submit {
-  display: block;
+.form-item button {
+  /* 按钮样式 */
   width: 100%;
   height: 40px;
   border: none;
-  border-radius: 20px;
-  background-color: #0078d4;
-  color: white;
+  border-radius: 5px;
+  background-color: #333;
+  color: #fff;
 }
 
-.submit:disabled {
-  opacity: 0.5;
-}
-
-.login {
-  margin-top: 20px;
-}
-
-.login a {
-  color: #0078d4;
+.form-item a {
+  /* 链接样式 */
+  color: #333;
+  text-decoration: none;
 }
 </style>

@@ -1,37 +1,46 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "useDefineForClassFields": true,
-    "module": "ESNext",
-    "lib": [
-      "ES2020",
-      "DOM",
-      "DOM.Iterable"
+    "target": "ES2020", // 编译目标版本
+    "module": "esnext", // 模块化方案
+    "strict": true, // 开启严格模式
+    "jsx": "preserve", // 保留jsx语法
+    "moduleResolution": "node", // 模块解析策略
+    "baseUrl": ".", // 基础路径
+    "paths": {
+      // 设置路径映射，与vite.config.ts中的alias保持一致
+      "@/*": ["./src/*"],
+    },
+    "types": [
+      // 设置类型声明文件，包括vite、vue、pinia等
+      "vite/client",
+      "vue",
+      "@vue/runtime-dom",
+      // "@pinia/vue"
+      "node"
     ],
-    "skipLibCheck": true,
-    /* Bundler mode */
-    "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "jsx": "preserve",
-    /* Linting */
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "lib": [
+      // 设置编译时需要引入的库，包括dom、esnext等
+      "ES2020",
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true, // 允许编译js文件
+    "allowSyntheticDefaultImports": true, // 允许默认导入非模块化的库
+    "experimentalDecorators": true, // 允许使用装饰器语法
+    "skipLibCheck": true, // 跳过类型声明文件的检查
+    "forceConsistentCasingInFileNames": true // 强制文件名大小写一致
   },
   "include": [
-    "src/**/*.ts",
-    "src/**/*.d.ts",
-    "src/**/*.tsx",
-    "src/**/*.vue",
-    "src/*.vue"
+    // 设置需要编译的文件或目录，包括src目录下的所有文件和类型声明文件
+    "./src/**/*.ts",
+    "./src/**/*.d.ts",
+    "./src/**/*.tsx",
+    "./src/**/*.vue"
   ],
-  "references": [
-    {
-      "path": "./tsconfig.node.json"
-    }
+  "exclude": [
+    // 设置不需要编译的文件或目录，包括node_modules目录和测试目录等
+    "node_modules",
+    "__tests__"
   ]
 }
